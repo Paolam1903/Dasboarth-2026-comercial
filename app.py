@@ -12,7 +12,7 @@ import math
 # =============================
 # CONFIG
 # =============================
-st.set_page_config("Dashboard Comercial - Mayo CVS 2026", layout="wide")
+st.set_page_config("Dashboard Comercial - Junio CVS 2026", layout="wide")
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
@@ -36,7 +36,7 @@ if not RUTA_LIQ.exists() or not RUTA_METAS.exists():
 # =============================
 st.markdown("""
 <div style="background-color:#E30613;padding:15px;border-radius:10px">
-<h1 style="color:white;text-align:center">📊 Dashboard Cierre Comercial – CVS Mayo 2026</h1>
+<h1 style="color:white;text-align:center">📊 Dashboard Cierre Comercial – CVS Junio 2026</h1>
 </div>
 """, unsafe_allow_html=True)
 
