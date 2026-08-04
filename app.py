@@ -12,7 +12,7 @@ import math
 # =============================
 # CONFIG
 # =============================
-st.set_page_config("Dashboard Comercial - Junio CVS 2026", layout="wide")
+st.set_page_config("Dashboard Comercial - Julio CVS 2026", layout="wide")
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
@@ -36,7 +36,7 @@ if not RUTA_LIQ.exists() or not RUTA_METAS.exists():
 # =============================
 st.markdown("""
 <div style="background-color:#E30613;padding:15px;border-radius:10px">
-<h1 style="color:white;text-align:center">📊 Dashboard Cierre Comercial – CVS Junio 2026</h1>
+<h1 style="color:white;text-align:center">📊 Dashboard Cierre Comercial – CVS Julio 2026</h1>
 </div>
 """, unsafe_allow_html=True)
 
@@ -95,41 +95,93 @@ if cvs_sel != "Todos":
     df_f = df_f[df_f["Sucursal"] == cvs_sel]
 
 # =============================
+# KPI CVS PLUS (ANTES DE LOS TABS)
+# =============================
+
+if cvs_sel and cvs_sel != "Todos":
+
+    df_cvs_plus = df_f[
+        (df_f["Sucursal"] == cvs_sel) &
+        (df_f["Producto"].str.upper() == "CVS PLUS")
+    ]
+
+
+
+# =============================
 # KPI CVS PLUS
 # =============================
-if cvs_sel != "Todos":
+
+if cvs_sel and cvs_sel != "Todos":
 
     df_cvs_plus = df_f[
         (df_f["Sucursal"] == cvs_sel) &
         (df_f["Producto"] == "CVS PLUS")
     ]
 
+    # Meta CVS PLUS
     meta_plus = df_cvs_plus["Meta_Producto"].max()
-    ejec_plus = df_cvs_plus["Cantidad"].iloc[0] if not df_cvs_plus.empty else 0
 
-    pct_plus = (ejec_plus / meta_plus * 100) if meta_plus > 0 else 0
-    pct_plus = round(pct_plus, 1)
+    # Ejecutado CVS PLUS
+    ejec_plus = df_cvs_plus["Cantidad"].sum()
 
-    if pct_plus >= 100:
+    # % cumplimiento cantidad
+    if meta_plus > 0:
+        pct_plus = round((ejec_plus / meta_plus) * 100, 1)
+    else:
+        pct_plus = 0
+
+    # % Encuestas
+    df_turno = df_f[
+        (df_f["Sucursal"] == cvs_sel) &
+        (df_f["Producto"] == "TURNO")
+    ]
+
+    if not df_turno.empty:
+        pct_encuestas = round(
+            float(df_turno["Cantidad"].iloc[0]),
+            1
+        )
+    else:
+        pct_encuestas = 0
+
+    # Semáforo
+    if pct_plus >= 100 and pct_encuestas >= 5:
         color = "#2ecc71"
-        estado = "Cumplido"
-    elif pct_plus >= 80:
+        estado = "Cumple cantidad y encuestas"
+
+    elif pct_plus >= 100 and pct_encuestas < 5:
         color = "#f39c12"
-        estado = "En riesgo"
+        estado = "Cumple cantidad, no cumple encuestas"
+
     else:
         color = "#e74c3c"
-        estado = "Bajo cumplimiento"
+        estado = "No cumple condiciones"
 
-    st.markdown(f"""
-    <div style="background-color:{color};padding:20px;border-radius:12px;text-align:center;color:white;font-size:22px;font-weight:bold;">
-    📦 CVS PLUS — {cvs_sel}<br><br>
-    Meta: {int(meta_plus):,} | Ejecutado: {int(ejec_plus):,}<br>
-    Cumplimiento: {pct_plus}% ({estado})
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(
+        f"""
+        <div style="
+            background-color:{color};
+            padding:20px;
+            border-radius:12px;
+            text-align:center;
+            color:white;
+            font-size:22px;
+            font-weight:bold;
+            margin-bottom:15px;
+        ">
+        📦 CVS PLUS — {cvs_sel}<br><br>
 
+        Meta: {int(meta_plus):,} |
+        Ejecutado: {int(ejec_plus):,}<br>
 
+        Cumplimiento: {pct_plus}%<br>
+        Encuestas: {pct_encuestas}%<br><br>
 
+        {estado}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 
@@ -377,7 +429,6 @@ with col2:
 SUPERNUMERARIOS = [
     "Johan Daniel Herrera Mazo",
     "Kelly Yuliana Ospina Saldarriaga",
-    "Evelis Mary Ojeda Baldovino",
     "Sara Julieth Acevedo Gutierrez"
 ]
 
@@ -391,10 +442,170 @@ def calcular_distribucion(n_asesores, cvs, nombre=None, rol=None):
 
 
     # ==================================================
+    # ==================================================
     # 🔴 REGLA ESPECIAL FRONTINO
     # ==================================================
     if cvs == "FRONTINO":
-        return 0.50
+        if rol == "LIDER":
+            return 0.50
+        else:
+            return 0.50
+
+    if cvs == "EL BAGRE":
+        return 1 / 3
+    
+    # ==================================================
+    # ITAGUI
+    # ==================================================
+
+    if cvs == "ITAGUI":
+
+        # Líder Marcela
+        if rol == "LIDER":
+            return 910 / 2500
+
+        # Asesora Diana
+        elif "DIANA" in nombre:
+            return 1005 / 2500
+
+        # Asesora Dailyn Del Valle
+        elif "DAILYN" in nombre:
+            return 585 / 2500
+        
+    # ==================================================
+    # ZARAGOZA
+    # ==================================================
+
+    if cvs == "ZARAGOZA":
+
+        # Líder Carol
+        if rol == "LIDER":
+            return 387 / 2200
+
+        # Asesora Paola
+        elif "PAOLA" in nombre:
+            return 1813 / 2200
+
+    # ==================================================
+    # YARUMAL
+    # ==================================================
+
+    if cvs == "YARUMAL":
+
+        # Líder Geraldin Angulo
+        if rol == "LIDER":
+            return 1152 / 1800
+
+        # Asesora Laura Carolina
+        elif "LAURA" in nombre:
+            return 648 / 1800
+        
+    # ==================================================
+    # DON MATIAS
+    # ==================================================
+
+    if cvs == "DON MATIAS":
+
+        # Líder Diana Ruiz
+        if rol == "LIDER":
+            return 1140 / 1500
+
+        # Asesora Evelyn
+        elif "EVELYN" in nombre:
+            return 360 / 1500
+        
+
+    # ==================================================
+    # BARBOSA
+    # ==================================================
+
+    if cvs == "BARBOSA":
+
+        # Líder Sandra Milena
+        if rol == "LIDER":
+            return 816 / 2400
+
+        # Asesora Evelis
+        elif "EVELIS" in nombre:
+            return 1224 / 2400
+
+        # Asesora Sene
+        elif "SENE" in nombre:
+            return 360 / 2400
+        
+    # ==================================================
+    # COPACABANA
+    # ==================================================
+
+    if cvs == "COPACABANA":
+
+        # Líder Vanessa
+        if rol == "LIDER":
+            return 1020 / 3000
+
+        # Asesora Bibiana
+        elif "BIBIANA" in nombre:
+            return 1530 / 3000
+
+        # Asesora Alexandra
+        elif "ALEXANDRA" in nombre:
+            return 450 / 3000
+        
+
+    # ==================================================
+    # CALDAS
+    # ==================================================
+
+    if cvs == "CALDAS":
+
+        # Líder Yolima
+        if rol == "LIDER":
+            return 1036 / 3700
+
+        # Asesora Darinela
+        elif "DARINELA" in nombre:
+            return 1554 / 3700
+
+        # Asesora Johnson
+        elif "JOHNSON" in nombre:
+            return 1110 / 3700
+
+    # ==================================================
+    # SABANETA
+    # ==================================================
+
+    if cvs == "SABANETA":
+
+        # LÃ­der Sandra
+        if rol == "LIDER":
+            return 806 / 2600
+
+        # Andrea
+        elif "ANDREA" in nombre:
+            return 1209 / 2600
+
+        # María
+        elif "MARIA" in nombre:
+            return 585 / 2600
+
+    # ==================================================
+    # ENVIGADO
+    # ==================================================
+
+    if cvs == "ENVIGADO":
+
+        # Líder
+        if rol == "LIDER":
+            return 938 / 3500
+
+        # Paola
+        elif "YESSICA" in nombre:
+            return 1155 / 3500
+
+        # Luz
+        elif "LUZ" in nombre:
+            return 1407 / 3500
+
 
     # ==================================================
     # 🔴 REGLAS NORMALES
@@ -430,7 +641,9 @@ def calcular_distribucion(n_asesores, cvs, nombre=None, rol=None):
 # MAESTRO DE PRODUCTOS
 # =====================
 def maestro_productos_por_cvs(df, cvs_sel):
-    df_cvs = df[df["Sucursal"] == cvs_sel]
+
+    # Filtrar solo el CVS seleccionado
+    df_cvs = df[df["Sucursal"] == cvs_sel].copy()
 
     # Tomar metas únicas por producto
     maestro = (
@@ -440,15 +653,27 @@ def maestro_productos_por_cvs(df, cvs_sel):
         .to_dict()
     )
 
-    # Asegurar que siempre existan estos productos
-    productos_base = ["HOGAR", "POSTPAGO", "TERMINALES", "CVS PLUS", "OTROS"]
+    # Productos que deben aparecer siempre
+    productos_base = [
+        "POSTPAGO",
+        "HOGAR",
+        "TERMINALES",
+        "OTROS",
+        "CVS PLUS"
+    ]
 
+    # Crear un maestro solo con esos productos
+    maestro = {
+        p: maestro.get(p, 0)
+        for p in productos_base
+    }
+
+    # Reemplazar NaN por 0
     for p in productos_base:
-        if p not in maestro:
+        if pd.isna(maestro[p]):
             maestro[p] = 0
 
     return maestro
-
 
 # =====================
 # TABLA PRODUCTOS
@@ -481,8 +706,26 @@ def construir_tabla_productos(df_vendedor, maestro, df_cvs, rol):
     # =========================
     # EJECUTADO PRODUCTOS
     # =========================
+    # =====================================
+    # PRODUCTOS QUE SÍ CUENTAN PARA EL KPI
+    # =====================================
+    productos_kpi = [
+        "POSTPAGO",
+        "HOGAR",
+        "TERMINALES",
+        "OTROS",
+        "CVS PLUS"
+    ]
+
+    # Excluir TURNO y cualquier otro producto
+    df_vendedor_kpi = df_vendedor[
+        df_vendedor["Producto"].isin(productos_kpi)
+    ]
+
+    # Ejecutado únicamente de los productos KPI
     ejec = (
-        df_vendedor.groupby("Producto")["Cantidad"]
+        df_vendedor_kpi
+        .groupby("Producto")["Cantidad"]
         .sum()
         .to_dict()
     )
@@ -491,7 +734,12 @@ def construir_tabla_productos(df_vendedor, maestro, df_cvs, rol):
 
     for producto, meta in maestro.items():
 
-        # 🔴 META AJUSTADA
+        # Si la meta viene vacía la convierte en 0
+        if pd.isna(meta):
+            meta = 0
+
+        meta = float(meta)
+
         meta_ajustada = math.floor((meta * porcentaje) + 0.5)
 
         # Redondeo comercial
