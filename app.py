@@ -12,7 +12,7 @@ import math
 # =============================
 # CONFIG
 # =============================
-st.set_page_config("Dashboard Comercial - Julio CVS 2026", layout="wide")
+st.set_page_config("Dashboard Comercial - Agosto CVS 2026", layout="wide")
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
@@ -36,7 +36,7 @@ if not RUTA_LIQ.exists() or not RUTA_METAS.exists():
 # =============================
 st.markdown("""
 <div style="background-color:#E30613;padding:15px;border-radius:10px">
-<h1 style="color:white;text-align:center">📊 Dashboard Cierre Comercial – CVS Julio 2026</h1>
+<h1 style="color:white;text-align:center">📊 Dashboard Cierre Comercial – CVS Agosto 2026</h1>
 </div>
 """, unsafe_allow_html=True)
 
@@ -429,6 +429,8 @@ with col2:
 SUPERNUMERARIOS = [
     "Johan Daniel Herrera Mazo",
     "Kelly Yuliana Ospina Saldarriaga",
+    "Luz Aida Quirama Corrales",
+    "Eduar Alonso Olaya Estrada",
     "Sara Julieth Acevedo Gutierrez"
 ]
 
@@ -440,7 +442,6 @@ def calcular_distribucion(n_asesores, cvs, nombre=None, rol=None):
     cvs = str(cvs).upper()
     nombre = str(nombre).upper() if nombre else ""
 
-
     # ==================================================
     # ==================================================
     # 🔴 REGLA ESPECIAL FRONTINO
@@ -451,142 +452,71 @@ def calcular_distribucion(n_asesores, cvs, nombre=None, rol=None):
         else:
             return 0.50
 
+    # ==================================================
+    # GIRARDOTA
+    # ==================================================
+    if cvs == "GIRARDOTA":
+
+        # Líder Sara
+        if rol == "LIDER":
+            return 200 / 2000
+
+        # Narelig
+        elif "NARELIG" in nombre:
+            return 1700 / 2000
+
+        # Yuliana
+        elif "YULIANA" in nombre:
+            return 100 / 2000
+
+        
+    # ==================================================
+    # NECHI
+    # ==================================================
+
+    if cvs == "NECHI":
+
+        # Lider Nechi Maricela
+        if rol == "LIDER":
+            return 300 / 2000
+
+        # LeidisÂ  Rosa
+        elif "LEIDISÂ" in nombre:
+            return 1700 / 2000
+
+
+    # ==================================================
+    # CIUDAD BOLIVAR
+    # ==================================================
+
+    if cvs == "CIUDAD BOLIVAR":
+
+        # Lider Natalie
+        if rol == "LIDER":
+            return 1087.5 / 1500
+
+        # Leidy Yaneth
+        elif "LEIDY" in nombre:
+            return 412.5 / 1500
+        
+
+    # ==================================================
+    # EL BAGRE
+    # ==================================================
+
     if cvs == "EL BAGRE":
-        return 1 / 3
-    
-    # ==================================================
-    # ITAGUI
-    # ==================================================
 
-    if cvs == "ITAGUI":
-
-        # Líder Marcela
+        # LLider
         if rol == "LIDER":
-            return 910 / 2500
+            return 1575 / 3500
 
-        # Asesora Diana
-        elif "DIANA" in nombre:
-            return 1005 / 2500
+        # Darly
+        elif "DARLY" in nombre:
+            return 853 / 3500
 
-        # Asesora Dailyn Del Valle
-        elif "DAILYN" in nombre:
-            return 585 / 2500
-        
-    # ==================================================
-    # ZARAGOZA
-    # ==================================================
-
-    if cvs == "ZARAGOZA":
-
-        # Líder Carol
-        if rol == "LIDER":
-            return 387 / 2200
-
-        # Asesora Paola
-        elif "PAOLA" in nombre:
-            return 1813 / 2200
-
-    # ==================================================
-    # YARUMAL
-    # ==================================================
-
-    if cvs == "YARUMAL":
-
-        # Líder Geraldin Angulo
-        if rol == "LIDER":
-            return 1152 / 1800
-
-        # Asesora Laura Carolina
-        elif "LAURA" in nombre:
-            return 648 / 1800
-        
-    # ==================================================
-    # DON MATIAS
-    # ==================================================
-
-    if cvs == "DON MATIAS":
-
-        # Líder Diana Ruiz
-        if rol == "LIDER":
-            return 1140 / 1500
-
-        # Asesora Evelyn
-        elif "EVELYN" in nombre:
-            return 360 / 1500
-        
-
-    # ==================================================
-    # BARBOSA
-    # ==================================================
-
-    if cvs == "BARBOSA":
-
-        # Líder Sandra Milena
-        if rol == "LIDER":
-            return 816 / 2400
-
-        # Asesora Evelis
-        elif "EVELIS" in nombre:
-            return 1224 / 2400
-
-        # Asesora Sene
-        elif "SENE" in nombre:
-            return 360 / 2400
-        
-    # ==================================================
-    # COPACABANA
-    # ==================================================
-
-    if cvs == "COPACABANA":
-
-        # Líder Vanessa
-        if rol == "LIDER":
-            return 1020 / 3000
-
-        # Asesora Bibiana
-        elif "BIBIANA" in nombre:
-            return 1530 / 3000
-
-        # Asesora Alexandra
-        elif "ALEXANDRA" in nombre:
-            return 450 / 3000
-        
-
-    # ==================================================
-    # CALDAS
-    # ==================================================
-
-    if cvs == "CALDAS":
-
-        # Líder Yolima
-        if rol == "LIDER":
-            return 1036 / 3700
-
-        # Asesora Darinela
-        elif "DARINELA" in nombre:
-            return 1554 / 3700
-
-        # Asesora Johnson
-        elif "JOHNSON" in nombre:
-            return 1110 / 3700
-
-    # ==================================================
-    # SABANETA
-    # ==================================================
-
-    if cvs == "SABANETA":
-
-        # LÃ­der Sandra
-        if rol == "LIDER":
-            return 806 / 2600
-
-        # Andrea
-        elif "ANDREA" in nombre:
-            return 1209 / 2600
-
-        # María
-        elif "MARIA" in nombre:
-            return 585 / 2600
+        # Jeider
+        elif "JEIDER" in nombre:
+            return 1378 / 3500
 
     # ==================================================
     # ENVIGADO
@@ -594,17 +524,92 @@ def calcular_distribucion(n_asesores, cvs, nombre=None, rol=None):
 
     if cvs == "ENVIGADO":
 
-        # Líder
+        # Lider
         if rol == "LIDER":
-            return 938 / 3500
+            return 1159.5 / 3500
 
-        # Paola
+        # Yessica
         elif "YESSICA" in nombre:
-            return 1155 / 3500
+            return 1739 / 3500
 
-        # Luz
+        # Luz Enith
         elif "LUZ" in nombre:
-            return 1407 / 3500
+            return 601.5 / 3500
+
+    # ==================================================
+    # SABANETA
+    # ==================================================
+
+    if cvs == "SABANETA":
+
+        # Lider Sandra - 40%
+        if rol == "LIDER":
+            return 1040 / 2600
+
+        # Andrea - 11 días
+        elif "ANDREA" in nombre:
+            return 715 / 2600
+
+        # Luz - 13 días
+        elif "LUZ" in nombre:
+            return 845 / 2600
+
+        
+    # ==================================================
+    # CALDAS
+    # ==================================================
+    if cvs == "CALDAS":
+
+        # Lider Yolima
+        if rol == "LIDER":
+            return 1202 / 3700
+
+        # Darinela
+        elif "DARINELA" in nombre:
+            return 694 / 3700
+
+        # Johnson
+        elif "JOHNSON" in nombre:
+            return 1804 / 3700
+
+    # ==================================================
+    # TERMINAL DEL NORTE
+    # ==================================================
+    if cvs == "TERMINAL NORTE":
+
+        # Lider Luz
+        if rol == "LIDER":
+            return 795 / 2650
+
+        # Maria Fernanda
+        elif "MARIA" in nombre:
+            return 1590 / 2650
+
+        # Julieth
+        elif "JULIETH" in nombre:
+            return 265 / 2650
+
+    # ==================================================
+    # JUNIN
+    # ==================================================
+
+    if cvs == "JUNIN":
+
+        # Lider
+        if rol == "LIDER":
+            return 1431 / 6800
+
+        # Nasly Johanna
+        elif "NASLY" in nombre:
+            return 1967 / 6800
+
+        # Jessica
+        elif "JESSICA" in nombre:
+            return 1967 / 6800
+
+        # Sandra Milena
+        elif "SANDRA" in nombre:
+            return 1435 / 6800
 
 
     # ==================================================
