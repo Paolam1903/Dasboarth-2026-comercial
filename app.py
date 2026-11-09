@@ -12,7 +12,7 @@ import math
 # =============================
 # CONFIG
 # =============================
-st.set_page_config("Dashboard Comercial - Agosto CVS 2026", layout="wide")
+st.set_page_config("Dashboard Comercial - octubre CVS 2026", layout="wide")
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
@@ -36,7 +36,7 @@ if not RUTA_LIQ.exists() or not RUTA_METAS.exists():
 # =============================
 st.markdown("""
 <div style="background-color:#E30613;padding:15px;border-radius:10px">
-<h1 style="color:white;text-align:center">📊 Dashboard Cierre Comercial – CVS Agosto 2026</h1>
+<h1 style="color:white;text-align:center">📊 Dashboard Cierre Comercial – CVS octubre 2026</h1>
 </div>
 """, unsafe_allow_html=True)
 
@@ -222,7 +222,7 @@ with tab1:
     # =============================
     with col1:
 
-        productos_base = ["HOGAR", "POSTPAGO", "TERMINALES", "CVS PLUS", "OTROS"]
+        productos_base = ["HOGAR", "POSTPAGO", "TERMINALES", "CVS PLUS", "OTROS", "ACCESORIOS"]
 
         prod = df_f.groupby("Producto").agg(
             Meta=("Meta_Producto", "max"),
@@ -427,10 +427,7 @@ with col2:
 # SUPERNUMERARIOS
 # =====================
 SUPERNUMERARIOS = [
-    "Johan Daniel Herrera Mazo",
     "Kelly Yuliana Ospina Saldarriaga",
-    "Luz Aida Quirama Corrales",
-    "Eduar Alonso Olaya Estrada",
     "Sara Julieth Acevedo Gutierrez"
 ]
 
@@ -443,151 +440,22 @@ def calcular_distribucion(n_asesores, cvs, nombre=None, rol=None):
     nombre = str(nombre).upper() if nombre else ""
 
     # ==================================================
+    # BELLO
     # ==================================================
-    # 🔴 REGLA ESPECIAL FRONTINO
-    # ==================================================
-    if cvs == "FRONTINO":
+
+    if cvs == "BELLO":
+
+        # Líder
         if rol == "LIDER":
-            return 0.50
-        else:
-            return 0.50
+            return 1008 / 2850
 
-    # ==================================================
-    # GIRARDOTA
-    # ==================================================
-    if cvs == "GIRARDOTA":
+        # Cristian
+        elif "CRISTIAN" in nombre:
+            return 1513 / 2850
 
-        # Líder Sara
-        if rol == "LIDER":
-            return 200 / 2000
-
-        # Narelig
-        elif "NARELIG" in nombre:
-            return 1700 / 2000
-
-        # Yuliana
-        elif "YULIANA" in nombre:
-            return 100 / 2000
-
-        
-    # ==================================================
-    # NECHI
-    # ==================================================
-
-    if cvs == "NECHI":
-
-        # Lider Nechi Maricela
-        if rol == "LIDER":
-            return 300 / 2000
-
-        # LeidisÂ  Rosa
-        elif "LEIDISÂ" in nombre:
-            return 1700 / 2000
-
-
-    # ==================================================
-    # CIUDAD BOLIVAR
-    # ==================================================
-
-    if cvs == "CIUDAD BOLIVAR":
-
-        # Lider Natalie
-        if rol == "LIDER":
-            return 1087.5 / 1500
-
-        # Leidy Yaneth
-        elif "LEIDY" in nombre:
-            return 412.5 / 1500
-        
-
-    # ==================================================
-    # EL BAGRE
-    # ==================================================
-
-    if cvs == "EL BAGRE":
-
-        # LLider
-        if rol == "LIDER":
-            return 1575 / 3500
-
-        # Darly
-        elif "DARLY" in nombre:
-            return 853 / 3500
-
-        # Jeider
-        elif "JEIDER" in nombre:
-            return 1378 / 3500
-
-    # ==================================================
-    # ENVIGADO
-    # ==================================================
-
-    if cvs == "ENVIGADO":
-
-        # Lider
-        if rol == "LIDER":
-            return 1159.5 / 3500
-
-        # Yessica
-        elif "YESSICA" in nombre:
-            return 1739 / 3500
-
-        # Luz Enith
-        elif "LUZ" in nombre:
-            return 601.5 / 3500
-
-    # ==================================================
-    # SABANETA
-    # ==================================================
-
-    if cvs == "SABANETA":
-
-        # Lider Sandra - 40%
-        if rol == "LIDER":
-            return 1040 / 2600
-
-        # Andrea - 11 días
-        elif "ANDREA" in nombre:
-            return 715 / 2600
-
-        # Luz - 13 días
-        elif "LUZ" in nombre:
-            return 845 / 2600
-
-        
-    # ==================================================
-    # CALDAS
-    # ==================================================
-    if cvs == "CALDAS":
-
-        # Lider Yolima
-        if rol == "LIDER":
-            return 1202 / 3700
-
-        # Darinela
-        elif "DARINELA" in nombre:
-            return 694 / 3700
-
-        # Johnson
-        elif "JOHNSON" in nombre:
-            return 1804 / 3700
-
-    # ==================================================
-    # TERMINAL DEL NORTE
-    # ==================================================
-    if cvs == "TERMINAL NORTE":
-
-        # Lider Luz
-        if rol == "LIDER":
-            return 795 / 2650
-
-        # Maria Fernanda
-        elif "MARIA" in nombre:
-            return 1590 / 2650
-
-        # Julieth
-        elif "JULIETH" in nombre:
-            return 265 / 2650
+        # Diana
+        elif "DIANA" in nombre:
+            return 329 / 2850  
 
     # ==================================================
     # JUNIN
@@ -595,22 +463,134 @@ def calcular_distribucion(n_asesores, cvs, nombre=None, rol=None):
 
     if cvs == "JUNIN":
 
-        # Lider
+        # Líder
         if rol == "LIDER":
-            return 1431 / 6800
+            return 1518 / 6800
 
         # Nasly Johanna
         elif "NASLY" in nombre:
-            return 1967 / 6800
+            return 2153 / 6800
 
         # Jessica
         elif "JESSICA" in nombre:
-            return 1967 / 6800
+            return 976 / 6800
 
         # Sandra Milena
         elif "SANDRA" in nombre:
-            return 1435 / 6800
+            return 2153 / 6800
 
+
+    # ==================================================
+    # ITAGUI
+    # ==================================================
+
+    if cvs == "ITAGUI":
+
+        # Líder
+        if rol == "LIDER":
+            return 265 / 2500
+
+        # Dailyn
+        elif "DAILYN" in nombre:
+            return 937.5 / 2500
+
+        # Sara
+        elif "SARA" in nombre:
+            return 360 / 2500
+
+        # Andrea
+        elif "ANDREA" in nombre:
+            return 937.5 / 2500
+    
+    # ==================================================
+    # DABEIBA
+    # ==================================================
+
+    if cvs == "DABEIBA":
+
+        # Líder
+        if rol == "LIDER":
+            return 1034 / 1200
+
+        # Yeilisa Fernanda
+        elif "YEILISA" in nombre:
+            return 166 / 1200
+
+    # ==================================================
+    # EL BAGRE
+    # ==================================================
+
+    if cvs == "EL BAGRE":
+
+        # Líder
+        if rol == "LIDER":
+            return 821 / 3500
+
+        # Darly
+        elif "DARLY" in nombre:
+            return 1196 / 3500
+
+        # Jeider
+        elif "JEIDER" in nombre:
+            return 1196 / 3500
+
+        # Marvin
+        elif "MARVIN" in nombre:
+            return 287 / 3500   
+
+    # ==================================================
+    # COPACABANA
+    # ==================================================
+
+    if cvs == "COPACABANA":
+
+        # Lider
+        if rol == "LIDER":
+            return 231 / 3000
+
+        # Vanessa
+        elif "VANESSA" in nombre:
+            return 519 / 3000
+        
+        # Alexandra
+        elif "ALEXANDRA" in nombre:
+            return 1125 / 3000
+
+        # Bibiana
+        elif "BIBIANA" in nombre:
+            return 1125 / 3000
+
+    # ==================================================
+    # FRONTINO
+    # ==================================================
+
+    if cvs == "FRONTINO":
+
+        # Líder
+        if rol == "LIDER":
+            return 1477 / 2400
+
+        # Yeilisa Fernanda
+        elif "YEILISA" in nombre:
+            return 923 / 2400
+
+    # ==================================================
+    # SEGOVIA
+    # ==================================================
+
+    if cvs == "SEGOVIA":
+
+        # Líder
+        if rol == "LIDER":
+            return 592 / 2200
+
+        # Sandra
+        elif "SANDRA" in nombre:
+            return 1397 / 2200
+
+        # Yuliana
+        elif "YULIANA" in nombre:
+            return 211 / 2200
 
     # ==================================================
     # 🔴 REGLAS NORMALES
@@ -664,7 +644,8 @@ def maestro_productos_por_cvs(df, cvs_sel):
         "HOGAR",
         "TERMINALES",
         "OTROS",
-        "CVS PLUS"
+        "CVS PLUS",
+        "ACCESORIOS"
     ]
 
     # Crear un maestro solo con esos productos
@@ -719,7 +700,8 @@ def construir_tabla_productos(df_vendedor, maestro, df_cvs, rol):
         "HOGAR",
         "TERMINALES",
         "OTROS",
-        "CVS PLUS"
+        "CVS PLUS",
+        "ACCESORIOS"
     ]
 
     # Excluir TURNO y cualquier otro producto
@@ -773,7 +755,8 @@ def construir_tabla_productos(df_vendedor, maestro, df_cvs, rol):
         "HOGAR",
         "TERMINALES",
         "OTROS",
-        "CVS PLUS"
+        "CVS PLUS",
+        "ACCESORIOS"
     ]
 
     tabla["Producto"] = pd.Categorical(
@@ -938,6 +921,22 @@ with tab2:
             use_container_width=True,
             key="editor_lider"
         )
+         # =========================
+        # FORMATO VISUAL ACCESORIOS
+        # =========================
+        tabla_lider["Meta_Producto"] = tabla_lider.apply(
+            lambda r: f"$ {int(r['Meta_Producto']):,}".replace(",", ".")
+            if r["Producto"] == "ACCESORIOS"
+            else int(r["Meta_Producto"]),
+            axis=1
+        )
+
+        tabla_lider["Ejecutado"] = tabla_lider.apply(
+            lambda r: f"$ {int(r['Ejecutado']):,}".replace(",", ".")
+            if r["Producto"] == "ACCESORIOS"
+            else int(r["Ejecutado"]),
+            axis=1
+        )
 
     # =====================
     # ASESORES
@@ -984,8 +983,27 @@ with tab2:
             </div>
             """, unsafe_allow_html=True)
 
+
+
             tabla = construir_tabla_productos(g, maestro, df_cvs, "ASESOR")
             st.dataframe(tabla, use_container_width=True)
+
+            # =========================
+            # FORMATO VISUAL ACCESORIOS
+            # =========================
+            tabla["Meta_Producto"] = tabla.apply(
+                lambda r: f"$ {int(r['Meta_Producto']):,}".replace(",", ".")
+                if r["Producto"] == "ACCESORIOS"
+                else int(r["Meta_Producto"]),
+                axis=1
+            )
+
+            tabla["Ejecutado"] = tabla.apply(
+                lambda r: f"$ {int(r['Ejecutado']):,}".replace(",", ".")
+                if r["Producto"] == "ACCESORIOS"
+                else int(r["Ejecutado"]),
+                axis=1
+            )
 
     # =====================
     # SUPERNUMERARIOS (SOLO VISUAL)
@@ -1071,20 +1089,6 @@ with tab3:
         except:
             return ""
 
-    # =========================
-    # FORMATO MONEDA
-    # =========================
-    cols_money = [
-        "Accesorios",
-        "Ejecutado.6"
-    ]
-
-    for col in cols_money:
-        if col in df_general.columns:
-            df_general[col] = pd.to_numeric(df_general[col], errors="coerce")
-            df_general[col] = df_general[col].apply(
-                lambda x: f"$ {int(x):,}".replace(",", ".") if pd.notnull(x) else ""
-            )
 
     # =========================
     # LIMPIAR DECIMALES (ENTEROS)
@@ -1096,7 +1100,8 @@ with tab3:
         "Otros",
         "Postpago",
         "Terminales",
-        "Hogar"
+        "Hogar",
+        "Accesorios"
     ]
 
     for col in cols_enteros:
