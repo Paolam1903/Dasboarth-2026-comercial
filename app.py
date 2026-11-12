@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 from pathlib import Path
@@ -11,8 +12,7 @@ import math
 # =============================
 # CONFIG
 # =============================
-st.set_page_config("Dashboard Comercial - noviembre CVS 2026", layout="wide")
-
+st.set_page_config("Dashboard Comercial - octubre CVS 2026", layout="wide")
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
@@ -21,6 +21,8 @@ LOGO_PATH = BASE_DIR / "logo.png"
 
 RUTA_LIQ = DATA_DIR / "liquidacion_final.xlsx"
 RUTA_METAS = DATA_DIR / "metas.xlsx"
+RUTA_GENERAL = DATA_DIR / "general.xlsx"
+RUTA_ADICIONALES = DATA_DIR / "adicionales.xlsx"
 
 # =============================
 # VALIDACIÓN
@@ -34,7 +36,7 @@ if not RUTA_LIQ.exists() or not RUTA_METAS.exists():
 # =============================
 st.markdown("""
 <div style="background-color:#E30613;padding:15px;border-radius:10px">
-<h1 style="color:white;text-align:center">📊 Dashboard Comercial ventas al 5 de noviembre y CVS PLUS, ecuestas – Accesorios pendiente</h1>
+<h1 style="color:white;text-align:center">📊 Dashboard Cierre Comercial – CVS octubre 2026</h1>
 </div>
 """, unsafe_allow_html=True)
 
@@ -44,176 +46,53 @@ st.markdown("""
 if LOGO_PATH.exists():
     st.sidebar.image(str(LOGO_PATH), use_container_width=True)
 
-
 # =============================
-# PERFIL + SEGURIDAD
+# CARGA DATOS
 # =============================
-# =============================
-# ACCESOS
-# =============================
-CLAVE_DIRECTOR = "Director2026+"
-CLAVE_ADMIN = "Sercom2026+"
-
-ACCESOS_CVS = {
-    "COPACABANA": "copa20*",
-    "BARBOSA": "barbosa20+",
-    "CAUCASIA": "cvscaucasia2026/",
-    "CIUDAD BOLIVAR": "bolivar2020+",
-    "DABEIBA": "dabeiba2020+",
-    "DON MATIAS": "cvsmatias2026*",
-    "EL BAGRE": "bagre2021*",
-    "FRONTINO": "frontino2026+",
-    "LA ESTRELLA": "estrella20+",
-    "NECHI": "cvssernechi2026+",
-    "PRADO": "prado20*",
-    "SEGOVIA": "sersegovia2026+",
-    "YARUMAL": "cvsyarumal2026+",
-    "ZARAGOZA": "zaragozaser2020+",
-    "BELLO": "bello123+",
-    "ENVIGADO": "envigado20+",
-    "ITAGUI": "itagui2026+",
-    "CALDAS": "caldas20+",
-    "JUNIN": "junin2026+",
-    "SABANETA": "sabaneta2020+",
-    "TERMINAL NORTE": "norte2026*",
-    "GENERAL": "Todos12345+",
-    "NUMERARIO": "numerario2026+",
-    "GIRARDOTA": "girardota20+",
-    "SAN CRISTOBAL" : "Cristobal123",
-    "METRO EST. SAN ANTONIO" : "Metro123",
-
-
-}
-
-st.sidebar.subheader("🔐 Acceso")
-
-perfil = st.sidebar.selectbox(
-    "Perfil",
-    ["CVS", "ADMINISTRATIVO", "DIRECTOR COMERCIAL"]
-)
-
-es_director = False
-es_admin = False
-cvs_usuario = None
-
-# =============================
-# PERFIL CVS
-# =============================
-if perfil == "CVS":
-    cvs_input = st.sidebar.selectbox(
-        "Selecciona tu CVS",
-        list(ACCESOS_CVS.keys())
-    )
-    clave = st.sidebar.text_input("Clave CVS", type="password")
-
-    if clave == ACCESOS_CVS.get(cvs_input):
-        cvs_usuario = cvs_input
-        st.sidebar.success(f"Acceso autorizado: {cvs_usuario}")
-    elif clave:
-        st.sidebar.error("Clave incorrecta")
-
-# =============================
-# PERFIL ADMINISTRATIVO
-# =============================
-elif perfil == "ADMINISTRATIVO":
-    clave = st.sidebar.text_input("Clave administrativa", type="password")
-    if clave == CLAVE_ADMIN:
-        es_admin = True
-        st.sidebar.success("Acceso administrativo autorizado")
-    elif clave:
-        st.sidebar.error("Clave incorrecta")
-
-# =============================
-# PERFIL DIRECTOR
-# =============================
-elif perfil == "DIRECTOR COMERCIAL":
-    clave = st.sidebar.text_input("Contraseña Director", type="password")
-    if clave == CLAVE_DIRECTOR:
-        es_director = True
-        st.sidebar.success("Acceso director autorizado")
-    elif clave:
-        st.sidebar.error("Contraseña incorrecta")
-
-
-# =============================
-# CARGA DATOS Y FILTROS
-# =============================
-
-# -----------------------------
-# Leer archivos
-# -----------------------------
 df = pd.read_excel(RUTA_LIQ)
 df_meta = pd.read_excel(RUTA_METAS)
 
-# -----------------------------
-# Convertir la columna Cantidad a numérica
-# -----------------------------
-df["Cantidad"] = (
-    df["Cantidad"]
-    .astype(str)
-    .str.replace(",", ".", regex=False)
-)
-
-df["Cantidad"] = pd.to_numeric(
-    df["Cantidad"],
-    errors="coerce"
-).fillna(0)
-
-# -----------------------------
-# Formatear fecha y crear columna Mes
-# -----------------------------
 df["Fecha"] = pd.to_datetime(df["Fecha"])
 df["Mes"] = df["Fecha"].dt.strftime("%Y-%m")
 
-
-# -----------------------------
-# Normalizar columnas de texto
-# -----------------------------
 for c in ["Sucursal", "Producto", "Rol"]:
     if c in df.columns:
         df[c] = df[c].astype(str).str.upper().str.strip()
     if c in df_meta.columns:
         df_meta[c] = df_meta[c].astype(str).str.upper().str.strip()
 
-# -----------------------------
-# Merge con columnas necesarias
-# Evitar traer "Mes" del df_meta para no sobreescribir
-# -----------------------------
 columnas_meta = [col for col in df_meta.columns if col not in ["Mes", "Sucursal", "Producto"]]
 df = df.merge(df_meta[["Sucursal", "Producto"] + columnas_meta], 
               on=["Sucursal", "Producto"], how="left")
 
-# -----------------------------
-# FILTROS EN SIDEBAR
-# -----------------------------
+# =============================
+# FILTROS
+# =============================
 st.sidebar.subheader("📅 Filtros")
 
-# Filtro por mes
 meses = ["Todos"] + sorted(df["Mes"].dropna().unique())
 mes_sel = st.sidebar.selectbox("Mes", meses)
 
-# Filtro por CVS según perfil
-if es_director or es_admin:
-    cvs_sel = st.sidebar.selectbox(
-        "CVS",
-        ["Todos"] + sorted(df["Sucursal"].dropna().unique())
-    )
-else:
-    cvs_sel = cvs_usuario
+st.sidebar.subheader("🏪 CVS")
+cvs_sel = st.sidebar.selectbox(
+    "Selecciona CVS",
+    ["Todos"] + sorted(df["Sucursal"].dropna().unique())
+)
 
-# -----------------------------
+# Permitir edición
+es_director = True
+es_admin = True
+
+# =============================
 # APLICAR FILTROS
-# -----------------------------
+# =============================
 df_f = df.copy()
 
-# Filtro mes
 if mes_sel != "Todos":
     df_f = df_f[df_f["Mes"] == mes_sel]
 
-# Filtro CVS
-if cvs_sel and cvs_sel != "Todos":
+if cvs_sel != "Todos":
     df_f = df_f[df_f["Sucursal"] == cvs_sel]
-
 
 # =============================
 # KPI CVS PLUS (ANTES DE LOS TABS)
@@ -304,11 +183,16 @@ if cvs_sel and cvs_sel != "Todos":
         unsafe_allow_html=True
     )
 
+
+
 # =============================
 # TABS
 # =============================
-tab1, tab2, tab3 = st.tabs(["📊 Dashboard", "💰 Presupuesto / Comisión", "⚖️Cumplimiento General"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Dashboard", "💰 Presupuesto / Comisión", "📊 Reporte General CVS", "⚖️Cumplimiento General", "📌 Adicionales"])
 
+# =============================
+# TAB 1 – DASHBOARD
+# =============================
 # =============================
 # TAB 1 – DASHBOARD
 # =============================
@@ -536,16 +420,16 @@ with col2:
     plt.close(fig)
 
 
-
+# =====================
+# SUPERNUMERARIOS
+# =====================
 # =====================
 # SUPERNUMERARIOS
 # =====================
 SUPERNUMERARIOS = [
-    "Johan Daniel Herrera Mazo",
     "Kelly Yuliana Ospina Saldarriaga",
     "Sara Julieth Acevedo Gutierrez"
 ]
-
 
 # =====================
 # REGLA DE DISTRIBUCIÓN
@@ -556,17 +440,158 @@ def calcular_distribucion(n_asesores, cvs, nombre=None, rol=None):
     nombre = str(nombre).upper() if nombre else ""
 
     # ==================================================
+    # BELLO
     # ==================================================
-    # 🔴 REGLA ESPECIAL FRONTINO
-    # ==================================================
-    if cvs in ["SEGOVIA"]:
-        if rol == "LIDER":
-            return 0.50
-        else:
-            return 0.50
 
-   
+    if cvs == "BELLO":
+
+        # Líder
+        if rol == "LIDER":
+            return 1008 / 2850
+
+        # Cristian
+        elif "CRISTIAN" in nombre:
+            return 1513 / 2850
+
+        # Diana
+        elif "DIANA" in nombre:
+            return 329 / 2850  
+
+    # ==================================================
+    # JUNIN
+    # ==================================================
+
+    if cvs == "JUNIN":
+
+        # Líder
+        if rol == "LIDER":
+            return 1518 / 6800
+
+        # Nasly Johanna
+        elif "NASLY" in nombre:
+            return 2153 / 6800
+
+        # Jessica
+        elif "JESSICA" in nombre:
+            return 976 / 6800
+
+        # Sandra Milena
+        elif "SANDRA" in nombre:
+            return 2153 / 6800
+
+
+    # ==================================================
+    # ITAGUI
+    # ==================================================
+
+    if cvs == "ITAGUI":
+
+        # Líder
+        if rol == "LIDER":
+            return 265 / 2500
+
+        # Dailyn
+        elif "DAILYN" in nombre:
+            return 937.5 / 2500
+
+        # Sara
+        elif "SARA" in nombre:
+            return 360 / 2500
+
+        # Andrea
+        elif "ANDREA" in nombre:
+            return 937.5 / 2500
+    
+    # ==================================================
+    # DABEIBA
+    # ==================================================
+
+    if cvs == "DABEIBA":
+
+        # Líder
+        if rol == "LIDER":
+            return 1034 / 1200
+
+        # Yeilisa Fernanda
+        elif "YEILISA" in nombre:
+            return 166 / 1200
+
+    # ==================================================
+    # EL BAGRE
+    # ==================================================
+
+    if cvs == "EL BAGRE":
+
+        # Líder
+        if rol == "LIDER":
+            return 821 / 3500
+
+        # Darly
+        elif "DARLY" in nombre:
+            return 1196 / 3500
+
+        # Jeider
+        elif "JEIDER" in nombre:
+            return 1196 / 3500
+
+        # Marvin
+        elif "MARVIN" in nombre:
+            return 287 / 3500   
+
+    # ==================================================
+    # COPACABANA
+    # ==================================================
+
+    if cvs == "COPACABANA":
+
+        # Lider
+        if rol == "LIDER":
+            return 231 / 3000
+
+        # Vanessa
+        elif "VANESSA" in nombre:
+            return 519 / 3000
         
+        # Alexandra
+        elif "ALEXANDRA" in nombre:
+            return 1125 / 3000
+
+        # Bibiana
+        elif "BIBIANA" in nombre:
+            return 1125 / 3000
+
+    # ==================================================
+    # FRONTINO
+    # ==================================================
+
+    if cvs == "FRONTINO":
+
+        # Líder
+        if rol == "LIDER":
+            return 1477 / 2400
+
+        # Yeilisa Fernanda
+        elif "YEILISA" in nombre:
+            return 923 / 2400
+
+    # ==================================================
+    # SEGOVIA
+    # ==================================================
+
+    if cvs == "SEGOVIA":
+
+        # Líder
+        if rol == "LIDER":
+            return 592 / 2200
+
+        # Sandra
+        elif "SANDRA" in nombre:
+            return 1397 / 2200
+
+        # Yuliana
+        elif "YULIANA" in nombre:
+            return 211 / 2200
+
     # ==================================================
     # 🔴 REGLAS NORMALES
     # ==================================================
@@ -595,14 +620,17 @@ def calcular_distribucion(n_asesores, cvs, nombre=None, rol=None):
 
     return 1.0
 
+
+
 # =====================
 # MAESTRO DE PRODUCTOS
 # =====================
-
 def maestro_productos_por_cvs(df, cvs_sel):
 
-    df_cvs = df[df["Sucursal"] == cvs_sel]
+    # Filtrar solo el CVS seleccionado
+    df_cvs = df[df["Sucursal"] == cvs_sel].copy()
 
+    # Tomar metas únicas por producto
     maestro = (
         df_cvs[["Producto", "Meta_Producto"]]
         .drop_duplicates()
@@ -610,29 +638,28 @@ def maestro_productos_por_cvs(df, cvs_sel):
         .to_dict()
     )
 
+    # Productos que deben aparecer siempre
     productos_base = [
-        "HOGAR",
         "POSTPAGO",
+        "HOGAR",
         "TERMINALES",
-        "CVS PLUS",
         "OTROS",
+        "CVS PLUS",
         "ACCESORIOS"
     ]
 
+    # Crear un maestro solo con esos productos
+    maestro = {
+        p: maestro.get(p, 0)
+        for p in productos_base
+    }
+
+    # Reemplazar NaN por 0
     for p in productos_base:
-        if p not in maestro:
+        if pd.isna(maestro[p]):
             maestro[p] = 0
 
-    # ==========================================================
-    # CALDAS Y COPACABANA
-    # ACCESORIOS NO DEBE MOSTRAR META
-    # ==========================================================
-
-    if cvs_sel in ["CALDAS", "COPACABANA"]:
-        maestro["ACCESORIOS"] = 0
-
     return maestro
-
 
 # =====================
 # TABLA PRODUCTOS
@@ -665,99 +692,61 @@ def construir_tabla_productos(df_vendedor, maestro, df_cvs, rol):
     # =========================
     # EJECUTADO PRODUCTOS
     # =========================
+    # =====================================
+    # PRODUCTOS QUE SÍ CUENTAN PARA EL KPI
+    # =====================================
+    productos_kpi = [
+        "POSTPAGO",
+        "HOGAR",
+        "TERMINALES",
+        "OTROS",
+        "CVS PLUS",
+        "ACCESORIOS"
+    ]
+
+    # Excluir TURNO y cualquier otro producto
+    df_vendedor_kpi = df_vendedor[
+        df_vendedor["Producto"].isin(productos_kpi)
+    ]
+
+    # Ejecutado únicamente de los productos KPI
     ejec = (
-        df_vendedor.groupby("Producto")["Cantidad"]
+        df_vendedor_kpi
+        .groupby("Producto")["Cantidad"]
         .sum()
         .to_dict()
     )
 
-    # =========================
-    # ELIMINAR PRODUCTOS VACÍOS
-    # =========================
-    maestro_limpio = {
-        producto: meta
-        for producto, meta in maestro.items()
-        if pd.notna(producto)
-        and str(producto).strip() != ""
-        and str(producto).upper() != "NONE"
-    }
-
     filas = []
 
-    for producto, meta in maestro_limpio.items():
+    for producto, meta in maestro.items():
 
-        # =========================
-        # VALIDAR NaN
-        # =========================
+        # Si la meta viene vacía la convierte en 0
         if pd.isna(meta):
             meta = 0
 
-        if pd.isna(porcentaje):
-            porcentaje = 0
+        meta = float(meta)
 
-        # =========================
-        # META AJUSTADA
-        # =========================
         meta_ajustada = math.floor((meta * porcentaje) + 0.5)
 
         # Redondeo comercial
-        meta_ajustada = int(meta_ajustada)
+        meta_ajustada = int(meta_ajustada + 0.5)
 
-        # =========================
-        # EJECUTADO
-        # =========================
         ejecutado = ejec.get(producto, 0)
 
-
-
-        # =========================
-        # REGLA ESPECIAL OTROS
-        # =========================
-        mostrar_porcentaje = True
-
-        if producto == "OTROS":
-
-            porta_prepago = ejec.get("PORTABILIDADES PREPAGO", 0)
-
-            # Si no cumple las 4 portabilidades prepago
-            if porta_prepago < 4:
-                mostrar_porcentaje = False
-
-        # =========================
-        # % CUMPLIMIENTO
-        # =========================
-        if mostrar_porcentaje:
-            if meta_ajustada > 0:
-                pct = int(round((ejecutado / meta_ajustada) * 100))
-            else:
-                pct = 0
-
-            pct_texto = f"{pct}%"
-
+        if meta_ajustada > 0:
+            pct = int(round((ejecutado / meta_ajustada) * 100))
         else:
-            pct_texto = "Pendiente 4 porta pre"
+            pct = 0
 
         filas.append({
             "Producto": producto,
             "Meta_Producto": meta_ajustada,
             "Ejecutado": int(ejecutado),
-            "% Cumplimiento": pct_texto
+            "% Cumplimiento": f"{pct}%"
         })
 
-    # =========================
-    # CREAR TABLA
-    # =========================
     tabla = pd.DataFrame(filas)
-
-    # =========================
-    # ELIMINAR FILAS VACÍAS
-    # =========================
-    tabla = tabla[
-        tabla["Producto"].notna() &
-        (tabla["Producto"].astype(str).str.strip() != "") &
-        (tabla["Producto"].astype(str).str.upper() != "NONE")
-    ]
-
     # =========================
     # ORDEN FIJO PRODUCTOS
     # =========================
@@ -768,7 +757,6 @@ def construir_tabla_productos(df_vendedor, maestro, df_cvs, rol):
         "OTROS",
         "CVS PLUS",
         "ACCESORIOS"
-
     ]
 
     tabla["Producto"] = pd.Categorical(
@@ -778,7 +766,6 @@ def construir_tabla_productos(df_vendedor, maestro, df_cvs, rol):
     )
 
     tabla = tabla.sort_values("Producto")
-    tabla = tabla.dropna(subset=["Producto"])
 
     return tabla
 
@@ -829,10 +816,11 @@ def calcular_kpi_puntos(df_cvs, df_persona, rol):
 
 
 # =======================
-# HISTÓRICO
+# Archivo histórico central
 # =======================
 RUTA_HISTORICO = DATA_DIR / "historico_comisiones.xlsx"
 
+# Cargar histórico existente (si existe)
 if RUTA_HISTORICO.exists():
     df_historico = pd.read_excel(RUTA_HISTORICO)
 else:
@@ -841,14 +829,11 @@ else:
             "Mes", "CVS", "Nombre", "Rol", "Producto",
             "Meta_Producto", "Ejecutado", "% Cumplimiento",
             "Tipo Pago Comisión", "Observación",
-            "% Cumplimiento Puntos", "ACC"
+            "ACC"
         ]
     )
 
-# 🔴 asegurar columna nueva
-if "% Cumplimiento Puntos" not in df_historico.columns:
-    df_historico["% Cumplimiento Puntos"] = 0
-
+# Guardar en session_state
 if "historico_decisiones" not in st.session_state:
     st.session_state["historico_decisiones"] = df_historico.to_dict("records")
 
@@ -858,10 +843,10 @@ with st.sidebar:
     mes_sel = st.selectbox("Selecciona el mes historico", meses)
 
 
-# =======================
-# TAB 2
-# =======================
 
+# =======================
+# TAB 2 – PRESUPUESTO / COMISIÓN (LIMPIO)
+# =======================
 with tab2:
     st.subheader("📍 Detalle por CVS")
 
@@ -869,10 +854,29 @@ with tab2:
         st.info("Selecciona un CVS en el panel lateral")
         st.stop()
 
-    df_cvs = df_f[df_f["Sucursal"] == cvs_sel]
-    maestro = maestro_productos_por_cvs(df_f, cvs_sel)
+    # =========================
+    # DATA COMPLETA
+    # =========================
+    df_cvs = df_f[df_f["Sucursal"] == cvs_sel].copy()
 
-    tablas_guardar = []
+    # limpiar nombres (evita errores)
+    df_cvs["Nombre_Vendedor"] = df_cvs["Nombre_Vendedor"].astype(str).str.strip()
+
+    # =========================
+    # DATA SOLO PARA META (SIN SUPERNUMERARIOS)
+    # =========================
+    df_cvs_meta = df_cvs[
+        ~df_cvs["Nombre_Vendedor"].isin(SUPERNUMERARIOS)
+    ]
+
+    # =========================
+    # SUPERNUMERARIOS
+    # =========================
+    df_super = df_cvs[
+        df_cvs["Nombre_Vendedor"].isin(SUPERNUMERARIOS)
+    ]
+
+    maestro = maestro_productos_por_cvs(df_f, cvs_sel)
 
     # =====================
     # LÍDER
@@ -883,13 +887,41 @@ with tab2:
         nombre_lider = df_lider["Nombre_Vendedor"].iloc[0]
         st.markdown(f"## 👔 Líder: **{nombre_lider}**")
 
-        meta_p, ejec_p, pct_p = calcular_kpi_puntos(df_cvs, df_lider, "LIDER")
+        # 🔥 USAR df_cvs_meta (CLAVE)
+        meta_p, ejec_p, pct_p = calcular_kpi_puntos(df_cvs_meta, df_lider, "LIDER")
+
+        if pct_p >= 100:
+            color = "#2ecc71"
+        elif pct_p >= 80:
+            color = "#f39c12"
+        else:
+            color = "#e74c3c"
+
+        st.markdown(f"""
+        <div style="
+            background-color:{color};
+            padding:10px;
+            border-radius:10px;
+            text-align:center;
+            color:white;
+            font-weight:bold;
+            margin-bottom:10px;">
+            {int(ejec_p)} / {int(meta_p)}<br>
+            {pct_p}%
+        </div>
+        """, unsafe_allow_html=True)
 
         st.metric("🎯 KPI Puntos", f"{int(ejec_p)} / {int(meta_p)}", f"{pct_p}%")
 
         tabla_lider = construir_tabla_productos(df_lider, maestro, df_cvs, "LIDER")
 
-        # =========================
+        st.data_editor(
+            tabla_lider,
+            disabled=not es_director,
+            use_container_width=True,
+            key="editor_lider"
+        )
+         # =========================
         # FORMATO VISUAL ACCESORIOS
         # =========================
         tabla_lider["Meta_Producto"] = tabla_lider.apply(
@@ -906,64 +938,55 @@ with tab2:
             axis=1
         )
 
-        tabla_lider["Nombre"] = nombre_lider
-        tabla_lider["Rol"] = "LIDER"
-        tabla_lider["CVS"] = cvs_sel
-        tabla_lider["Mes"] = mes_sel
-
-        tabla_lider[["Tipo Pago Comisión", "Observación"]] = tabla_lider.apply(
-            lambda r: next(
-                (
-                    (x["Tipo Pago Comisión"], x["Observación"])
-                    for x in st.session_state["historico_decisiones"]
-                    if x["Mes"] == mes_sel
-                    and x["CVS"] == cvs_sel
-                    and x["Nombre"] == nombre_lider
-                    and x["Producto"] == r["Producto"]
-                ),
-                ("Sin pago (0%)", "")
-            ),
-            axis=1,
-            result_type="expand"
-        )
-
-        tabla_lider["Observación"] = tabla_lider["Observación"].fillna("").astype(str)
-
-        tabla_lider = st.data_editor(
-            tabla_lider,
-            column_config={
-                "Tipo Pago Comisión": st.column_config.SelectboxColumn(
-                    options=["Pago 100%", "Pago 90%", "Sin pago (0%)"]
-                ),
-                "Observación": st.column_config.TextColumn(width="large")
-            },
-            disabled=not es_director,
-            use_container_width=True,
-            key="editor_lider"
-        )
-
-        tablas_guardar.append(tabla_lider)
-
     # =====================
-    # ASESORES (NORMALES)
+    # ASESORES
     # =====================
     st.markdown("## 👥 Asesoras")
 
-    df_asesores = df_cvs[
+    df_asesoras = df_cvs[
         (df_cvs["Rol"] == "ASESOR") &
         (~df_cvs["Nombre_Vendedor"].isin(SUPERNUMERARIOS))
     ]
 
-    for nombre, g in df_asesores.groupby("Nombre_Vendedor"):
+    asesoras = list(df_asesoras.groupby("Nombre_Vendedor"))
 
-        with st.expander(f"👤 {nombre}"):
+    cols = st.columns(3)
 
-            meta_p, ejec_p, pct_p = calcular_kpi_puntos(df_cvs, g, "ASESOR")
+    for i, (nombre, g) in enumerate(asesoras):
 
-            st.metric("🎯 KPI Puntos", f"{int(ejec_p)} / {int(meta_p)}", f"{pct_p}%")
+        col = cols[i % 3]
+
+        with col:
+            st.markdown(f"### 👤 {nombre}")
+
+            # 🔥 USAR df_cvs_meta (CLAVE)
+            meta_p, ejec_p, pct_p = calcular_kpi_puntos(df_cvs_meta, g, "ASESOR")
+
+            if pct_p >= 100:
+                color = "#2ecc71"
+            elif pct_p >= 80:
+                color = "#f39c12"
+            else:
+                color = "#e74c3c"
+
+            st.markdown(f"""
+            <div style="
+                background-color:{color};
+                padding:10px;
+                border-radius:10px;
+                text-align:center;
+                color:white;
+                font-weight:bold;
+                margin-bottom:10px;">
+                {int(ejec_p)} / {int(meta_p)}<br>
+                {pct_p}%
+            </div>
+            """, unsafe_allow_html=True)
+
+
 
             tabla = construir_tabla_productos(g, maestro, df_cvs, "ASESOR")
-
+            st.dataframe(tabla, use_container_width=True)
 
             # =========================
             # FORMATO VISUAL ACCESORIOS
@@ -982,219 +1005,138 @@ with tab2:
                 axis=1
             )
 
-
-
-
-
-
-            tabla["Nombre"] = nombre
-            tabla["Rol"] = "ASESOR"
-            tabla["CVS"] = cvs_sel
-            tabla["Mes"] = mes_sel
-
-            tabla[["Tipo Pago Comisión", "Observación"]] = tabla.apply(
-                lambda r: next(
-                    (
-                        (x["Tipo Pago Comisión"], x["Observación"])
-                        for x in st.session_state["historico_decisiones"]
-                        if x["Mes"] == mes_sel
-                        and x["CVS"] == cvs_sel
-                        and x["Nombre"] == nombre
-                        and x["Producto"] == r["Producto"]
-                    ),
-                    ("Sin pago (0%)", "")
-                ),
-                axis=1,
-                result_type="expand"
-            )
-
-            tabla["Observación"] = tabla["Observación"].fillna("").astype(str)
-
-            tabla = st.data_editor(
-                tabla,
-                column_config={
-                    "Tipo Pago Comisión": st.column_config.SelectboxColumn(
-                        options=["Pago 100%", "Pago 90%", "Sin pago (0%)"]
-                    ),
-                    "Observación": st.column_config.TextColumn(width="large")
-                },
-                disabled=not es_director,
-                use_container_width=True,
-                key=f"editor_{nombre}"
-            )
-
-            tablas_guardar.append(tabla)
-
     # =====================
-    # SUPERNUMERARIOS
+    # SUPERNUMERARIOS (SOLO VISUAL)
     # =====================
-    df_supernumerarios = df_cvs[
-        (df_cvs["Rol"] == "ASESOR") &
-        (df_cvs["Nombre_Vendedor"].isin(SUPERNUMERARIOS))
-    ]
+    st.markdown("## 🧩 Supernumerarios (Sin Meta)")
 
-    if not df_supernumerarios.empty:
+    if df_super.empty:
+        st.info("No hay supernumerarios en este CVS")
+    else:
 
-        st.divider()
-        st.markdown("## 🟡 Supernumerarios (Apoyo temporal)")
+        cols = st.columns(3)
 
-        for nombre, g in df_supernumerarios.groupby("Nombre_Vendedor"):
+        for i, (nombre, g) in enumerate(df_super.groupby("Nombre_Vendedor")):
 
-            with st.expander(f"🟡 {nombre} (Supernumerario)"):
+            col = cols[i % 3]
 
-                ejec_p = g["Puntos"].sum()
+            with col:
+                st.markdown(f"### 👤 {nombre}")
 
-                st.metric("🎯 KPI Puntos", f"{int(ejec_p)} / 0", "No aplica")
+                ejecutado = g["Puntos"].sum()
 
-                st.warning("No afecta KPI ni metas del CVS")
+                st.markdown(f"""
+                <div style="
+                    background-color:#7f8c8d;
+                    padding:10px;
+                    border-radius:10px;
+                    text-align:center;
+                    color:white;
+                    font-weight:bold;
+                    margin-bottom:10px;">
+                    {int(ejecutado)} puntos<br>
+                    Sin meta
+                </div>
+                """, unsafe_allow_html=True)
 
                 tabla = construir_tabla_productos(g, maestro, df_cvs, "ASESOR")
-
-                tabla["Nombre"] = nombre
-                tabla["Rol"] = "SUPERNUMERARIO"
-                tabla["CVS"] = cvs_sel
-                tabla["Mes"] = mes_sel
-
-                tabla[["Tipo Pago Comisión", "Observación"]] = tabla.apply(
-                    lambda r: next(
-                        (
-                            (x["Tipo Pago Comisión"], x["Observación"])
-                            for x in st.session_state["historico_decisiones"]
-                            if x["Mes"] == mes_sel
-                            and x["CVS"] == cvs_sel
-                            and x["Nombre"] == nombre
-                            and x["Producto"] == r["Producto"]
-                        ),
-                        ("Sin pago (0%)", "")
-                    ),
-                    axis=1,
-                    result_type="expand"
-                )
-
-                tabla["Observación"] = tabla["Observación"].fillna("").astype(str)
-
-                tabla = st.data_editor(
-                    tabla,
-                    column_config={
-                        "Tipo Pago Comisión": st.column_config.SelectboxColumn(
-                            options=["Pago 100%", "Pago 90%", "Sin pago (0%)"]
-                        ),
-                        "Observación": st.column_config.TextColumn(width="large")
-                    },
-                    disabled=not es_director,
-                    use_container_width=True,
-                    key=f"editor_super_{nombre}"
-                )
-
-                tablas_guardar.append(tabla)
-
-    # =====================
-    # 🔴 GUARDAR HISTÓRICO (CORREGIDO)
-    # =====================
-    st.divider()
-
-    if es_director and st.button("💾 Guardar decisiones del CVS"):
-
-        tablas_con_acc = []
-
-        for tabla in tablas_guardar:
-
-            tabla = tabla.copy()
-            nombre = tabla["Nombre"].iloc[0]
-            rol = tabla["Rol"].iloc[0]
-
-
-            # =========================
-            # CONVERTIR ACCESORIOS A NÚMERO
-            # ANTES DE GUARDAR
-            # =========================
-            for columna in ["Meta_Producto", "Ejecutado"]:
-                tabla[columna] = (
-                    tabla[columna]
-                    .astype(str)
-                    .str.replace("$", "", regex=False)
-                    .str.replace(".", "", regex=False)
-                    .str.replace(" ", "", regex=False)
-                )
-
-                tabla[columna] = pd.to_numeric(
-                    tabla[columna],
-                    errors="coerce"
-                ).fillna(0)
-
-
-
-
-            acc_valor = st.session_state.get(f"acc_{cvs_sel}_{nombre}", 100)
-            tabla["ACC"] = acc_valor
-
-            df_persona = df_f[
-                (df_f["Sucursal"] == cvs_sel) &
-                (df_f["Nombre_Vendedor"] == nombre)
-            ]
-
-            if nombre.upper() in SUPERNUMERARIOS:
-                pct_kpi = 0
-            else:
-                _, _, pct_kpi = calcular_kpi_puntos(df_cvs, df_persona, rol)
-
-            tabla["% Cumplimiento Puntos"] = pct_kpi
-
-            tablas_con_acc.append(tabla)
-
-        nuevas_decisiones = pd.concat(tablas_con_acc, ignore_index=True)
-
-        if RUTA_HISTORICO.exists():
-            df_historico = pd.read_excel(RUTA_HISTORICO)
-        else:
-            df_historico = pd.DataFrame(columns=nuevas_decisiones.columns)
-
-        df_historico = df_historico[~(
-            (df_historico["Mes"] == mes_sel) &
-            (df_historico["CVS"] == cvs_sel)
-        )]
-
-        df_historico = pd.concat([df_historico, nuevas_decisiones], ignore_index=True)
-
-        df_historico.to_excel(RUTA_HISTORICO, index=False)
-
-        st.session_state["historico_decisiones"] = df_historico.to_dict("records")
-
-        st.success("✅ Guardado correctamente")
-
-    # =====================
-    # DESCARGAR HISTÓRICO
-    # =====================
-    st.subheader("📊 Descargar histórico")
-
-    if st.button("📥 Descargar histórico del mes"):
-
-        df_hist = pd.DataFrame(st.session_state.get("historico_decisiones", []))
-        df_hist = df_hist[df_hist["Mes"] == mes_sel]
-
-        if not df_hist.empty:
-
-            archivo_mes = DATA_DIR / f"Historico_Comisiones_{mes_sel}.xlsx"
-            df_hist.to_excel(archivo_mes, index=False)
-
-            with open(archivo_mes, "rb") as f:
-                st.download_button(
-                    label="⬇️ Descargar Excel",
-                    data=f,
-                    file_name=f"Historico_Comisiones_{mes_sel}.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
-        else:
-            st.warning("⚠️ No hay datos para este mes")
+                st.dataframe(tabla, use_container_width=True)
 
 
 # =======================
-# TAB 3 – CUMPLIMIENTO GENERAL COORDINADOR Y SUPERVISORA
+# TAB 3 – REPORTE GENERAL LIMPIO
 # =======================
-# =========================
-# TAB 3 – PANEL COORDINADOR
-# =========================
 with tab3:
+    st.subheader("📊 Reporte General CVS")
+
+    if not RUTA_GENERAL.exists():
+        st.error("❌ No se encontró el archivo general.xlsx en /data")
+        st.stop()
+
+    df_general = pd.read_excel(RUTA_GENERAL)
+
+    # =========================
+    # LIMPIAR NOMBRES DE COLUMNAS
+    # =========================
+    df_general.columns = df_general.columns.str.strip()
+
+    # =========================
+    # FORMATEAR COLUMNAS %
+    # =========================
+    cols_pct = [c for c in df_general.columns if "%" in c.upper()]
+
+    for col in cols_pct:
+        df_general[col] = df_general[col].apply(
+            lambda x: f"{round(x*100,1)}%" if pd.notnull(x) and isinstance(x, (int, float)) else x
+        )
+
+    # =========================
+    # SEMÁFORO
+    # =========================
+    def color_cumplimiento(val):
+        try:
+            if isinstance(val, str) and "%" in val:
+                num = float(val.replace("%", ""))
+            else:
+                num = float(val)
+
+            if num >= 100:
+                return "background-color: #2ecc71; color: white"
+            elif num >= 80:
+                return "background-color: #f39c12; color: white"
+            else:
+                return "background-color: #e74c3c; color: white"
+        except:
+            return ""
+
+
+    # =========================
+    # LIMPIAR DECIMALES (ENTEROS)
+    # =========================
+    cols_enteros = [
+        "Meta en puntos",
+        "Ejecutado",
+        "CVS PLUS",
+        "Otros",
+        "Postpago",
+        "Terminales",
+        "Hogar",
+        "Accesorios"
+    ]
+
+    for col in cols_enteros:
+        if col in df_general.columns:
+            df_general[col] = pd.to_numeric(df_general[col], errors="coerce")
+            df_general[col] = df_general[col].fillna(0).astype(int)
+            df_general[col] = df_general[col].apply(
+                lambda x: f"{x:,}".replace(",", ".")
+            )
+
+    # =========================
+    # APLICAR ESTILO
+    # =========================
+    styled_df = df_general.style
+
+    for col in cols_pct:
+        if col in df_general.columns:
+            styled_df = styled_df.map(color_cumplimiento, subset=[col])
+
+    # =========================
+    # MOSTRAR
+    # =========================
+    st.dataframe(
+        styled_df,
+        use_container_width=True,
+        height=600
+    )
+
+
+
+# =======================
+# =========================
+# TAB 4 – PANEL COORDINADOR
+# =========================
+with tab4:
     st.subheader("⚖️Cumplimiento General")
 
     # =========================
@@ -1275,3 +1217,70 @@ with tab3:
     ).reset_index()
 
     st.dataframe(resumen_prod, use_container_width=True)
+
+
+
+# =======================
+# TAB 5 – ADICIONALES
+# =======================
+with tab5:
+    st.subheader("📌 Reporte Adicionales")
+
+    if not RUTA_ADICIONALES.exists():
+        st.error("❌ No se encontró el archivo adicionales.xlsx en /data")
+        st.stop()
+
+    df_add = pd.read_excel(RUTA_ADICIONALES)
+
+    # =========================
+    # DIVIDIR SECCIONES
+    # =========================
+
+    # Resumen Prepago
+    resumen_prepago = df_add.iloc[2:23, 0:2]
+
+    # Portabilidad
+    portabilidad = df_add.iloc[2:20, 5:7]
+
+    # Top equipos
+    top_equipos = df_add.iloc[2:12, 9:11]
+
+    # Top planes
+    top_planes = df_add.iloc[2:12, 13:16]
+
+    # Informe cajeras
+    fila_inicio = df_add[
+        df_add.apply(lambda row: row.astype(str).str.contains("Informe Cajeras", case=False).any(), axis=1)
+    ].index
+
+    if len(fila_inicio) > 0:
+        cajeras = df_add.iloc[fila_inicio[0]+1:, :]
+    else:
+        cajeras = df_add.copy()
+
+    # =========================
+    # MOSTRAR EN COLUMNAS
+    # =========================
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.markdown("### 📱 Prepago vs Postpago")
+        st.dataframe(resumen_prepago, use_container_width=True)
+
+    with col2:
+        st.markdown("### 🔄 Portabilidad")
+        st.dataframe(portabilidad, use_container_width=True)
+
+    with col3:
+        st.markdown("### 📦 Top Equipos")
+        st.dataframe(top_equipos, use_container_width=True)
+
+    with col4:
+        st.markdown("### 📊 Top Planes")
+        st.dataframe(top_planes, use_container_width=True)
+
+    st.divider()
+
+    st.markdown("### 🧾 Informe Cajeras")
+    st.dataframe(cajeras, use_container_width=True)
